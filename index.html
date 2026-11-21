@@ -5,11 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#16302b">
   <title>Central Operacional</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="app"><p class="boot">Carregando…</p></div>
   <div id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="js/main.js"></script>
+  <script>
+    // Mostra na tela qualquer erro de carregamento (ajuda a diagnosticar)
+    function showBootError(msg) {
+      var el = document.querySelector('.boot');
+      if (el) el.textContent = 'Erro ao carregar: ' + msg;
+    }
+    window.addEventListener('error', function (e) {
+      showBootError((e.message || (e.target && e.target.src) || 'arquivo não encontrado'));
+    }, true);
+    window.addEventListener('unhandledrejection', function (e) {
+      showBootError(e.reason && e.reason.message ? e.reason.message : String(e.reason));
+    });
+  </script>
+  <script type="module" src="main.js"></script>
 </body>
 </html>
