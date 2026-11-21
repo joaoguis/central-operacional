@@ -50,3 +50,29 @@ button{font:inherit}
 #toast.show{opacity:1} #toast.err{background:var(--bad);color:#fff}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Fase 2 */
+textarea{width:100%;padding:.7rem;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+input[type=checkbox]{width:auto;margin-right:.4rem}
+label.inline{display:flex;align-items:center;margin:.6rem 0}
+.filters select,.filters input{flex:1 1 140px;width:auto}
+.card.task{display:block;width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer}
+summary{cursor:pointer;font-weight:600}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem;margin-bottom:.75rem}
+.photo{margin:0}.photo img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:var(--bg);cursor:zoom-in}
+.badge.st-pendente{color:var(--muted)}.badge.st-em_andamento{color:var(--accent)}
+.badge.st-aguardando_validacao{color:#7a5af0}.badge.st-concluida{color:var(--ok)}
+.badge.st-cancelada{color:var(--muted);text-decoration:line-through}.badge.st-atrasada{color:var(--bad);font-weight:600}
+.nav button{font-size:.85rem}
+
+/* Fases 3 e 4 */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:.5rem;margin:.75rem 0}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:.75rem;display:flex;flex-direction:column;gap:.15rem}
+.kpi strong{font-size:1.6rem;line-height:1}
+.kpi.ok strong{color:var(--ok)} .kpi.bad strong{color:var(--bad)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:.45rem .5rem;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;font-size:.82rem}
+tr.click{cursor:pointer} tr.click:hover{background:var(--bg)}
+td.late{color:var(--bad);font-weight:600}

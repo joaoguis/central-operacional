@@ -2,6 +2,7 @@ import { sb } from './supabase.js';
 import * as auth from './auth.js';
 import * as data from './data.js';
 import { toast } from './ui.js';
+import { runBackgroundJobs } from './jobs.js';
 import { renderLogin, renderRecovery, renderPending, renderShell } from './views.js';
 
 const logout = async () => { await auth.signOut(); renderLogin({ onSession: enter }); };
@@ -13,6 +14,7 @@ async function enter() {
       return renderPending(profile, { onRefresh: enter, onLogout: logout });
     }
     await renderShell(profile, { onLogout: logout });
+    runBackgroundJobs(profile);
   } catch (e) {
     toast(e.message || 'Erro ao carregar.', true);
     renderLogin({ onSession: enter });

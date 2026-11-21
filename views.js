@@ -1,6 +1,9 @@
 import { h, mount, toast, run } from './ui.js';
 import * as auth from './auth.js';
 import * as data from './data.js';
+import { viewTasks } from './tasks.js';
+import { viewPainel } from './painel.js';
+import { viewConfig } from './settings.js';
 
 /* ---------- Login / cadastro / recuperação ---------- */
 export function renderLogin({ onSession }) {
@@ -74,13 +77,22 @@ export function renderPending(profile, { onRefresh, onLogout }) {
 /* ---------- App ---------- */
 export async function renderShell(profile, { onLogout }) {
   const access = await data.getMyAccess();
-  const perms = new Set(access.flatMap((m) => (m.roles?.role_permissions || []).map((p) => p.permission_code)));
-  const can = (p) => profile.is_admin || perms.has(p);
+  const permsBy = new Map();
+  for (const a of access) {
+    const set = permsBy.get(a.restaurant_id) || new Set();
+    (a.roles?.role_permissions || []).forEach((p) => set.add(p.permission_code));
+    permsBy.set(a.restaurant_id, set);
+  }
+  const canIn = (rid, p) => profile.is_admin || !!permsBy.get(rid)?.has(p);
+  const can = (p) => profile.is_admin || [...permsBy.values()].some((s) => s.has(p));
+  const ctx = { profile, can, canIn };
 
   const tabs = [
-    { id: 'home', label: 'Início', view: viewHome },
-    { id: 'rest', label: 'Ambientes', view: viewRestaurants },
+    { id: 'home', label: 'Início', view: (c) => (c.can('ver_indicadores') ? viewPainel(c) : viewHome(c)) },
+    { id: 'mine', label: 'Minhas', view: (c) => viewTasks(c, { mine: true }) },
+    { id: 'tasks', label: 'Tarefas', view: (c) => viewTasks(c, { mine: false }) },
     can('gerenciar_usuarios') && { id: 'users', label: 'Usuários', view: viewUsers },
+    { id: 'cfg', label: 'Config', view: (c) => viewConfig(c, { viewRestaurants }) },
   ].filter(Boolean);
 
   const content = h('main');
@@ -91,7 +103,7 @@ export async function renderShell(profile, { onLogout }) {
       else b.removeAttribute('aria-current');
     });
     content.replaceChildren(h('p', { class: 'muted' }, 'Carregando…'));
-    try { content.replaceChildren(await tabs.find((t) => t.id === id).view({ profile, can })); }
+    try { content.replaceChildren(await tabs.find((t) => t.id === id).view(ctx)); }
     catch (e) { content.replaceChildren(h('p', {}, 'Não foi possível carregar: ' + e.message)); }
   };
   tabs.forEach((t) => nav.append(h('button', { 'data-id': t.id, onClick: () => go(t.id) }, t.label)));
@@ -101,6 +113,12 @@ export async function renderShell(profile, { onLogout }) {
       h('div', { class: 'row' }, h('span', {}, profile.full_name),
         h('button', { class: 'btn ghost small', onClick: onLogout }, 'Sair'))),
     content, nav);
+  const refreshBadge = () => data.countMyOpen(profile.id).then((n) => {
+    const b = nav.querySelector('[data-id=mine]');
+    if (b) b.textContent = n ? `Minhas (${n})` : 'Minhas';
+  }).catch(() => {});
+  nav.addEventListener('click', () => setTimeout(refreshBadge, 600));
+  refreshBadge();
   go('home');
 }
 
@@ -113,7 +131,7 @@ async function viewHome({ profile }) {
     rests.map((r) => h('div', { class: 'card' },
       h('div', { class: 'row between' }, h('h3', {}, r.name), !r.active && h('span', { class: 'badge inativo' }, 'inativo')),
       h('p', { class: 'muted' }, rolesBy(r.id).join(', ') || (profile.is_admin ? 'Administrador geral' : '')))),
-    h('p', { class: 'muted' }, 'Tarefas e painel chegam nas próximas fases.'));
+    h('p', { class: 'muted' }, 'O painel com indicadores chega na próxima fase.'));
 }
 
 async function viewRestaurants({ profile }) {
